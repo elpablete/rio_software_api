@@ -1,3 +1,5 @@
+import datetime as dt
+
 import fastapi
 
 app = fastapi.FastAPI()
@@ -54,7 +56,26 @@ MOVIES = [
 ]
 
 
+@app.get("/")
+async def hola():
+    return "Hola ERC!!!"
+
+
 @app.get("/movies")
-async def search_movies(q: str):
-    result = [m for m in MOVIES if q in m["overview"].lower()]
+async def search_movies(since: dt.date | None = None, q: str | None = None):
+    result = MOVIES
+    if q is not None:
+        result = [m for m in result if q in m["overview"].lower()]
+
+    if since is not None:
+        result = [
+            m for m in result if since <= dt.date.fromisoformat(m["release_date"])
+        ]
+
+    return result
+
+
+@app.get("/watch/{content_id}")
+async def watch_content(content_id: str):
+    result = [m for m in MOVIES if str(m["id"]) == content_id][0]
     return result
