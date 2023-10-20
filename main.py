@@ -52,6 +52,21 @@ MOVIES = [
         "title": "The Terminator",
         "certification": "R",
         "trailer": "https://www.youtube.com/watch?v=k64P4l2Wmeg",
+        "rating_critics": 7.3,
+        "added_on": "2023-10-03",
+    },
+    {
+        "id": 219,
+        "original_language": "English",
+        "overview": 'In the post-apocalyptic future, reigning tyrannical supercomputers teleport a cyborg assassin known as the "Terminator" back to 1984 to kill Sarah Connor, whose unborn son is destined to lead insurgents against 21st century mechanical hegemony. Meanwhile, the human-resistance movement dispatches a lone warrior to safeguard Sarah. Can he stop the virtually indestructible killing machine?',
+        "poster_path": "/qvktm0BHcnmDpul4Hz01GIazWPr.jpg",
+        "release_date": "1984-10-26",
+        "runtime": 108,
+        "tagline": "Your future is in his hands.",
+        "title": "The Terminator 2",
+        "trailer": "https://www.youtube.com/watch?v=k64P4l2Wmeg",
+        "rating_critics": 7.3,
+        "added_on": "2023-10-03",
     },
 ]
 
@@ -62,20 +77,31 @@ async def hola():
 
 
 @app.get("/movies")
-async def search_movies(since: dt.date | None = None, q: str | None = None):
+async def search_movies(
+    certification: str | None = None,
+    since: dt.date | None = None,
+    q: str | None = None,
+    is_certification_null: bool | None = None,
+):
+    print(type(certification), type(since), type(q))
     result = MOVIES
     if q is not None:
-        result = [m for m in result if q in m["overview"].lower()]
+        result = [m for m in result if q.lower() in m["overview"].lower()]
 
     if since is not None:
         result = [
             m for m in result if since <= dt.date.fromisoformat(m["release_date"])
         ]
 
+    if certification is not None:
+        result = [m for m in result if certification == m.get("certification", "")]
+
+    if is_certification_null is not None:
+        result = [m for m in result if "certification" not in m.keys()]
     return result
 
 
-@app.get("/watch/{content_id}")
+@app.get("/movies/{content_id}")
 async def watch_content(content_id: str):
     result = [m for m in MOVIES if str(m["id"]) == content_id][0]
     return result
